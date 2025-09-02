@@ -42,7 +42,7 @@ const ContextProvider = (props) => {
 
   const onSent = async (prompt, addToHistory = true) => {
     // Stop any previous generation and clear timeouts
-    setIsStopped(true);
+    setIsStopped(false); // Reset stopped state first
     isGeneratingRef.current = false;
     clearAllTimeouts();
     
@@ -76,7 +76,7 @@ const ContextProvider = (props) => {
       const response = await runchat(finalPrompt);
 
       // Check if we should still continue (not stopped)
-      if (!isGeneratingRef.current || isStopped) {
+      if (!isGeneratingRef.current) {
         console.log("Generation stopped or cancelled");
         setLoading(false);
         isGeneratingRef.current = false;
@@ -112,7 +112,7 @@ const ContextProvider = (props) => {
       // Display words one by one with delay
       for (let i = 0; i < newResponseArray.length; i++) {
         // Check if stopped before displaying each word
-        if (!isGeneratingRef.current || isStopped) {
+        if (!isGeneratingRef.current) {
           console.log("Stopped at word:", i);
           setLoading(false);
           isGeneratingRef.current = false;
@@ -124,7 +124,7 @@ const ContextProvider = (props) => {
         // Use Promise to wait for the delay
         await new Promise(resolve => {
           const timeoutId = setTimeout(() => {
-            if (isGeneratingRef.current && !isStopped) {
+            if (isGeneratingRef.current) {
               setResultData(prev => prev + nextWord + " ");
               console.log(`Displayed word ${i + 1}: "${nextWord}"`);
             }
@@ -136,7 +136,7 @@ const ContextProvider = (props) => {
         });
         
         // Check again after the word is displayed
-        if (!isGeneratingRef.current || isStopped) {
+        if (!isGeneratingRef.current) {
           console.log("Stopped after displaying word:", i);
           setLoading(false);
           isGeneratingRef.current = false;
@@ -145,7 +145,7 @@ const ContextProvider = (props) => {
       }
 
       // Set loading to false after all words are displayed
-      if (isGeneratingRef.current && !isStopped) {
+      if (isGeneratingRef.current) {
         setLoading(false);
         isGeneratingRef.current = false;
       }
